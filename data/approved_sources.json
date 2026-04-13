@@ -1,0 +1,19 @@
+{
+  "sources": [
+    {
+      "name": "NASA mission updates",
+      "type": "blog_post",
+      "allowed_domains": ["nasa.gov"]
+    },
+    {
+      "name": "NASA multimedia",
+      "type": "image_release",
+      "allowed_domains": ["nasa.gov"]
+    },
+    {
+      "name": "NASA status and API surfaces",
+      "type": "status_page",
+      "allowed_domains": ["nasa.gov", "api.nasa.gov", "eyes.nasa.gov"]
+    }
+  ]
+}
