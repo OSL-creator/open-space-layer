@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search · Open Space Layer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="search">
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="./index.html"><span class="brand-mark">OSL</span><span>Open Space Layer</span></a>
+        <div class="nav-links">
+          <a href="./index.html">Home</a>
+          <a href="./search.html">Search</a>
+        </div>
+      </div>
+    </header>
+    <main class="container page-shell">
+      <section class="card">
+        <div class="section-head compact">
+          <div>
+            <div class="eyebrow">Search official evidence</div>
+            <h1>Search</h1>
+          </div>
+        </div>
+        <form id="search-form" class="search-bar">
+          <input id="search-input" type="text" placeholder="Search the official corpus..." />
+          <button type="submit">Search</button>
+        </form>
+        <div class="filters-row">
+          <label><span>Type</span><select id="filter-type"><option value="">All</option><option value="event">Events</option><option value="excerpt">Excerpts</option><option value="document">Documents</option></select></label>
+          <label><span>Evidence</span><select id="filter-evidence"><option value="">All</option><option value="confirmed">Confirmed</option><option value="derived">Derived*</option><option value="interpreted">Interpreted**</option><option value="unresolved">Unresolved</option></select></label>
+          <label class="checkbox-label"><input id="filter-confirmed" type="checkbox" /> Confirmed only</label>
+        </div>
+        <div id="search-suggestions" class="chip-row"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head compact">
+          <h2 id="results-title">Results</h2>
+        </div>
+        <div id="search-results" class="results-list"></div>
+      </section>
+    </main>
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

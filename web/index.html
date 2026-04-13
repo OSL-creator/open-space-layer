@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Space Layer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="home">
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark">OSL</span>
+          <span>Open Space Layer</span>
+        </a>
+        <div class="nav-links">
+          <a href="./index.html">Home</a>
+          <a href="./search.html">Search</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <div class="hero-copy">
+          <div class="eyebrow">Official-source mission intelligence</div>
+          <h1>Search NASA evidence or enter through mission control.</h1>
+          <p>
+            A provenance-first, read-only exploration layer for official NASA mission material.
+            Search events, documents, excerpts, and media-backed moments without losing the source trail.
+          </p>
+          <form id="hero-search-form" class="search-bar large">
+            <input id="hero-search-input" type="text" placeholder="Try Earthrise, blackout, closest approach..." />
+            <button type="submit">Search evidence</button>
+          </form>
+          <div class="trust-row">
+            <span class="trust-pill">NASA-only corpus</span>
+            <span class="trust-pill">Read-only public access</span>
+            <span class="trust-pill">Derived views are explicitly marked</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-card">
+            <div class="panel-label">Evidence classes</div>
+            <div class="evidence-demo">
+              <span class="badge confirmed">Confirmed</span>
+              <span class="badge derived">Derived*</span>
+              <span class="badge interpreted">Interpreted**</span>
+              <span class="badge unresolved">Unresolved</span>
+            </div>
+            <p>
+              Confirmed outranks derived. Derived objects disclose how the view was built from official inputs.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="container split-grid">
+        <section class="card card-lg">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Search-first entry</div>
+              <h2>Evidence search</h2>
+            </div>
+            <a href="./search.html" class="text-link">Open full search</a>
+          </div>
+          <div id="topic-suggestions" class="chip-row"></div>
+          <div class="muted">Suggested from the official corpus only.</div>
+        </section>
+
+        <section class="card card-lg">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Mission-first entry</div>
+              <h2>Mission explorer</h2>
+            </div>
+          </div>
+          <div id="missions-grid" class="mission-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

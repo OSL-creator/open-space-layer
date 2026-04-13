@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db.session import Base, engine
@@ -12,7 +13,7 @@ from app.api.search import router as search_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Open Space Layer Starter", version="0.2.0")
+app = FastAPI(title="Open Space Layer Starter", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,6 +27,7 @@ app.include_router(missions_router)
 app.include_router(events_router)
 app.include_router(documents_router)
 app.include_router(search_router)
+app.mount("/ui", StaticFiles(directory="web", html=True), name="ui")
 
 
 @app.get("/")
@@ -36,6 +38,6 @@ def root():
         "scope": "NASA-only",
         "mode": "read-only",
         "seed_mission": "Artemis II",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "entry_mode": "split",
     }
