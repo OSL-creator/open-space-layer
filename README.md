@@ -85,3 +85,12 @@ Then commit the cleanup together with v0.3.
 - richer event extraction
 - evidence panel cross-links from documents to events
 - deployable public API host to pair with GitHub Pages
+
+
+## v0.4 demo mode
+
+The `web/` frontend now supports a built-in demo dataset for GitHub Pages.
+
+- On GitHub Pages (`github.io`), the site automatically runs in **demo mode** and reads from `web/demo-data.js`.
+- Locally with FastAPI running, the UI continues to use the live API by default.
+- This gives the public site a working, searchable mission experience before backend hosting is added.

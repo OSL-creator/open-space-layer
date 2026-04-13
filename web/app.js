@@ -1,8 +1,112 @@
 (function () {
   const page = document.body.dataset.page;
-  const API_BASE = window.OSL_CONFIG?.API_BASE || 'http://127.0.0.1:8000';
+  const API_BASE = window.OSL_CONFIG?.API_BASE || null;
+  const DEMO_MODE = Boolean(window.OSL_CONFIG?.DEMO_MODE);
+  const DEMO = window.OSL_DEMO_DATA || {};
+
+  function normalizeSearchResults(results) {
+    return (results || []).map((item) => ({ ...item, score: item.score ?? 1.0 }));
+  }
+
+  function suggestionsForQuery(q) {
+    const base = (DEMO.home?.suggested_topics || []);
+    const lower = (q || '').toLowerCase();
+    if (!lower) return base;
+    const filtered = base.filter((topic) => topic.toLowerCase().includes(lower) || lower.includes(topic.toLowerCase()));
+    return filtered.length ? filtered : base.slice(0, 4);
+  }
+
+  function demoSearch(path) {
+    const url = new URL(`https://osl.local${path}`);
+    const q = (url.searchParams.get('q') || '').toLowerCase();
+    const objectType = url.searchParams.get('object_type');
+    const evidenceClass = url.searchParams.get('evidence_class');
+    const confirmedOnly = url.searchParams.get('confirmed_only') === 'true';
+    const mission = url.searchParams.get('mission');
+
+    const eventItems = Object.values(DEMO.events || {}).map((event) => ({
+      object_type: 'event',
+      id: event.id,
+      title: event.title,
+      snippet: event.summary,
+      mission_slug: 'artemis-ii',
+      evidence_class: event.evidence_class,
+      evidence_presentation: event.evidence_presentation,
+      timestamp: event.start_time,
+      score: 1.0,
+      extra: {}
+    }));
+    const docItems = Object.values(DEMO.documents || {}).map((doc) => ({
+      object_type: 'document',
+      id: doc.id,
+      title: doc.title,
+      snippet: doc.raw_text,
+      mission_slug: 'artemis-ii',
+      source_type: doc.source_type,
+      timestamp: doc.published_at,
+      score: 0.9,
+      extra: {}
+    }));
+    const excerptItems = Object.values(DEMO.documents || {}).flatMap((doc) =>
+      (doc.excerpts || []).map((ex) => ({
+        object_type: 'excerpt',
+        id: ex.id,
+        title: `Excerpt ${ex.excerpt_index}: ${doc.title}`,
+        snippet: ex.excerpt_text,
+        mission_slug: 'artemis-ii',
+        source_type: doc.source_type,
+        timestamp: doc.published_at,
+        score: 0.85,
+        extra: { document_id: doc.id }
+      }))
+    );
+
+    let results = [...eventItems, ...docItems, ...excerptItems];
+    if (mission && mission !== 'artemis-ii') results = [];
+    if (q) {
+      results = results.filter((item) => (`${item.title} ${item.snippet}`).toLowerCase().includes(q));
+    }
+    if (objectType) results = results.filter((item) => item.object_type === objectType);
+    if (evidenceClass) results = results.filter((item) => item.evidence_class === evidenceClass);
+    if (confirmedOnly) results = results.filter((item) => item.evidence_class === 'confirmed');
+
+    return {
+      query: url.searchParams.get('q') || '',
+      total: results.length,
+      results: normalizeSearchResults(results),
+      suggestions: suggestionsForQuery(url.searchParams.get('q') || '')
+    };
+  }
+
+  function getDemoJson(path) {
+    if (path === '/api/home') return DEMO.home;
+    if (path === '/api/missions') return DEMO.missions;
+    if (path.startsWith('/api/missions/') && path.endsWith('/timeline')) {
+      const slug = decodeURIComponent(path.split('/')[3]);
+      return DEMO.missionTimelines?.[slug] || [];
+    }
+    if (path.startsWith('/api/missions/')) {
+      const slug = decodeURIComponent(path.split('/')[3]);
+      return (DEMO.missions || []).find((m) => m.slug === slug);
+    }
+    if (path.startsWith('/api/events/')) {
+      const id = decodeURIComponent(path.split('/')[3]);
+      return DEMO.events?.[id];
+    }
+    if (path.startsWith('/api/documents/')) {
+      const id = decodeURIComponent(path.split('/')[3]);
+      return DEMO.documents?.[id];
+    }
+    if (path.startsWith('/api/search')) return demoSearch(path);
+    if (path.startsWith('/api/suggestions')) {
+      const url = new URL(`https://osl.local${path}`);
+      return suggestionsForQuery(url.searchParams.get('q') || '');
+    }
+    throw new Error(`No demo route for ${path}`);
+  }
 
   async function getJson(path) {
+    if (DEMO_MODE || !API_BASE) return getDemoJson(path);
     const res = await fetch(`${API_BASE}${path}`);
     if (!res.ok) throw new Error(`Request failed: ${res.status}`);
     return res.json();
