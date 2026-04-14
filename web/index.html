@@ -6,48 +6,70 @@
     <title>Open Space Layer</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
+
   <body data-page="home">
+    <!-- NAV -->
     <header class="site-header">
       <div class="container nav">
         <a class="brand" href="./index.html">
           <span class="brand-mark">OSL</span>
           <span>Open Space Layer</span>
         </a>
+
         <div class="nav-links">
           <a href="./index.html">Home</a>
           <a href="./search.html">Search</a>
+          <a href="./mission.html">Missions</a>
+          <a href="./methodology.html">Methodology</a>
         </div>
       </div>
     </header>
 
     <main>
+
+      <!-- HERO -->
       <section class="hero container">
         <div class="hero-copy">
           <div class="eyebrow">Official-source mission intelligence</div>
-          <h1>Search NASA evidence or enter through mission control.</h1>
+
+          <h1>Search official space mission evidence</h1>
+
           <p>
-            A provenance-first, read-only exploration layer for official NASA mission material.
-            Search events, documents, excerpts, and media-backed moments without losing the source trail.
+            Open Space Layer surfaces mission events, documents, and excerpts
+            directly from official sources like NASA.
+            Every result is linked back to its original evidence.
           </p>
+
           <form id="hero-search-form" class="search-bar large">
-            <input id="hero-search-input" type="text" placeholder="Try Earthrise, blackout, closest approach..." />
+            <input
+              id="hero-search-input"
+              type="text"
+              placeholder="Try Earthrise, blackout, closest approach..."
+            />
             <button type="submit">Search evidence</button>
           </form>
+
+          <!-- TRUST -->
           <div class="trust-row">
             <span class="trust-pill">NASA-only corpus</span>
             <span class="trust-pill">Read-only public access</span>
             <span class="trust-pill">Derived views are explicitly marked</span>
+            <span class="trust-pill">No public submissions</span>
           </div>
         </div>
+
+        <!-- SIDE PANEL -->
         <aside class="hero-panel">
           <div class="panel-card">
             <div class="panel-label">Evidence classes</div>
+
             <div class="evidence-demo">
               <span class="badge confirmed">Confirmed</span>
               <span class="badge derived">Derived*</span>
               <span class="badge interpreted">Interpreted**</span>
               <span class="badge unresolved">Unresolved</span>
             </div>
+
             <p>
               Confirmed outranks derived. Derived objects disclose how the view was built from official inputs.
             </p>
@@ -55,7 +77,10 @@
         </aside>
       </section>
 
+      <!-- ENTRY POINTS -->
       <section class="container split-grid">
+
+        <!-- SEARCH -->
         <section class="card card-lg">
           <div class="section-head">
             <div>
@@ -64,10 +89,12 @@
             </div>
             <a href="./search.html" class="text-link">Open full search</a>
           </div>
+
           <div id="topic-suggestions" class="chip-row"></div>
           <div class="muted">Suggested from the official corpus only.</div>
         </section>
 
+        <!-- MISSIONS -->
         <section class="card card-lg">
           <div class="section-head">
             <div>
@@ -75,25 +102,35 @@
               <h2>Mission explorer</h2>
             </div>
           </div>
+
           <div id="missions-grid" class="mission-grid"></div>
         </section>
+
       </section>
 
+      <!-- NEWS -->
       <section class="card news-card">
         <div class="section-head">
           <div>
             <div class="eyebrow">Recent in spaceflight</div>
             <h2>Launches, lunar ops, and orbital headlines</h2>
           </div>
-          <a href="./search.html?q=Artemis" class="text-link">Search the corpus</a>
+
+          <a href="./search.html?q=Artemis" class="text-link">
+            Search the corpus
+          </a>
         </div>
+
         <div id="recent-news" class="news-list"></div>
       </section>
+
     </main>
 
+    <!-- SCRIPTS -->
     <script src="./config.js"></script>
     <script src="./demo-data.js"></script>
     <script src="./app.js"></script>
     <script src="./cat-mode.js"></script>
+
   </body>
 </html>
