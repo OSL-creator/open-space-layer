@@ -228,7 +228,7 @@ window.OSL_DEMO_DATA = {
       slug: "artemis-ii-flight-day-seed",
       title: "Artemis II Flight Day Seed Update",
       source_type: "blog_post",
-      source_url: "https://www.nasa.gov/example/artemis-ii-flight-day-seed",
+      source_url: "https://www.nasa.gov/blogs/missions/2026/04/06/artemis-ii-flight-day-6-lunar-flyby-updates/",
       publisher: "NASA",
       published_at: "2026-04-06T19:00:00Z",
       raw_text: "NASA’s Artemis II mission is the first crewed mission under Artemis and will send four astronauts around the Moon aboard Orion. During the lunar flyby, Orion passed behind the Moon, creating a planned communications blackout as line-of-sight to Earth was interrupted. The crew observed Earthset as Orion moved behind the Moon. At closest approach, Orion passed about 4,067 miles above the lunar surface. After the blackout window, the crew observed Earthrise as communications were re-established. The observation window concluded and the return phase continued toward Earth.",

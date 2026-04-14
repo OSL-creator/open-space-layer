@@ -4,6 +4,19 @@
   const DEMO_MODE = Boolean(window.OSL_CONFIG?.DEMO_MODE);
   const DEMO = window.OSL_DEMO_DATA || {};
 
+  function escapeHtml(str) {
+    return (str || '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  }
+
+  function formatDate(input) {
+    if (!input) return 'Unknown time';
+    return new Date(input).toLocaleString();
+  }
+
+  function qs(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+
   function normalizeSearchResults(results) {
     return (results || []).map((item) => ({ ...item, score: item.score ?? 1.0 }));
   }
@@ -14,6 +27,150 @@
     if (!lower) return base;
     const filtered = base.filter((topic) => topic.toLowerCase().includes(lower) || lower.includes(topic.toLowerCase()));
     return filtered.length ? filtered : base.slice(0, 4);
+  }
+
+  function allDocuments() {
+    return Object.values(DEMO.documents || {});
+  }
+
+  function findExcerptReference(excerptId) {
+    for (const doc of allDocuments()) {
+      for (const excerpt of (doc.excerpts || [])) {
+        if (excerpt.id === excerptId) {
+          return { document: doc, excerpt };
+        }
+      }
+    }
+    return null;
+  }
+
+  function citationForExcerpt(excerptId) {
+    const ref = findExcerptReference(excerptId);
+    if (!ref) return null;
+    return {
+      document_id: ref.document.id,
+      document_title: ref.document.title,
+      document_url: ref.document.source_url,
+      excerpt_id: ref.excerpt.id,
+      excerpt_index: ref.excerpt.excerpt_index,
+      excerpt_text: ref.excerpt.excerpt_text,
+      source_type: ref.document.source_type,
+      publisher: ref.document.publisher,
+      published_at: ref.document.published_at,
+      page_number: ref.excerpt.page_number,
+      section_label: ref.excerpt.section_label
+    };
+  }
+
+  function eventCitations(event) {
+    return (event?.evidence_links || [])
+      .map((link) => citationForExcerpt(link.excerpt?.id))
+      .filter(Boolean);
+  }
+
+  function documentCitations(doc) {
+    return (doc?.excerpts || [])
+      .map((excerpt) => citationForExcerpt(excerpt.id))
+      .filter(Boolean);
+  }
+
+  function evidenceBadge(presentation, fallback) {
+    const label = presentation?.display_label || fallback || 'Unknown';
+    const cls = (presentation?.evidence_class || fallback || '').toLowerCase();
+    return `<span class="badge ${cls}">${label}${presentation?.display_marker || ''}</span>`;
+  }
+
+  function resultLink(item) {
+    if (item.object_type === 'event') return `./event.html?id=${encodeURIComponent(item.id)}`;
+    if (item.object_type === 'document') return `./document.html?id=${encodeURIComponent(item.id)}`;
+    if (item.object_type === 'excerpt' && item.extra?.document_id) {
+      return `./document.html?id=${encodeURIComponent(item.extra.document_id)}#excerpt=${encodeURIComponent(item.id)}`;
+    }
+    return '#';
+  }
+
+  function ensureEvidenceDrawer() {
+    let drawer = document.getElementById('evidence-drawer');
+    if (drawer) return drawer;
+    drawer = document.createElement('div');
+    drawer.id = 'evidence-drawer';
+    drawer.className = 'drawer-backdrop hidden';
+    drawer.innerHTML = `
+      <aside class="drawer-panel" aria-modal="true" aria-label="Evidence panel">
+        <div class="drawer-head">
+          <div>
+            <div class="eyebrow">Citation evidence</div>
+            <h2 id="drawer-title">Source details</h2>
+          </div>
+          <button class="drawer-close" type="button" aria-label="Close evidence panel">×</button>
+        </div>
+        <div id="drawer-body" class="drawer-body"></div>
+      </aside>
+    `;
+    document.body.appendChild(drawer);
+    drawer.addEventListener('click', (e) => {
+      if (e.target === drawer || e.target.classList.contains('drawer-close')) closeDrawer();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+    return drawer;
+  }
+
+  function openDrawer(citation) {
+    const drawer = ensureEvidenceDrawer();
+    document.getElementById('drawer-title').textContent = citation.document_title || 'Source details';
+    document.getElementById('drawer-body').innerHTML = `
+      <div class="drawer-meta">
+        <span class="chip">${escapeHtml(citation.publisher || 'Official source')}</span>
+        ${citation.source_type ? `<span class="chip">${escapeHtml(citation.source_type)}</span>` : ''}
+        ${citation.section_label ? `<span class="chip">${escapeHtml(citation.section_label)}</span>` : ''}
+        <span class="chip">Excerpt ${citation.excerpt_index}</span>
+      </div>
+      <div class="disclosure">
+        <strong>Supporting excerpt</strong>
+        <p class="doc-text">${escapeHtml(citation.excerpt_text)}</p>
+      </div>
+      <div class="kv-grid citation-grid">
+        <div class="kv-card"><div class="kv-label">Publisher</div><div class="kv-value citation-small">${escapeHtml(citation.publisher || 'NASA')}</div></div>
+        <div class="kv-card"><div class="kv-label">Published</div><div class="kv-value citation-small">${escapeHtml(citation.published_at ? formatDate(citation.published_at) : 'Unavailable')}</div></div>
+        <div class="kv-card"><div class="kv-label">Excerpt link</div><div class="kv-value citation-small"><a class="source-link" href="./document.html?id=${encodeURIComponent(citation.document_id)}#excerpt=${encodeURIComponent(citation.excerpt_id)}">Open in document</a></div></div>
+      </div>
+      <p><a class="source-link" href="${escapeHtml(citation.document_url)}" target="_blank" rel="noreferrer">Open original official source</a></p>
+    `;
+    drawer.classList.remove('hidden');
+    document.body.classList.add('drawer-open');
+  }
+
+  function closeDrawer() {
+    const drawer = document.getElementById('evidence-drawer');
+    if (!drawer) return;
+    drawer.classList.add('hidden');
+    document.body.classList.remove('drawer-open');
+  }
+
+  function citationChip(citation, n = 1) {
+    const safe = encodeURIComponent(JSON.stringify(citation));
+    return `<button type="button" class="citation-chip" data-citation="${safe}">[Source ${n}]</button>`;
+  }
+
+  function citationRow(citations) {
+    if (!citations || !citations.length) return '';
+    return `<div class="citation-row">${citations.map((citation, idx) => citationChip(citation, idx + 1)).join('')}</div>`;
+  }
+
+  function bindCitationChips(scope = document) {
+    scope.querySelectorAll('.citation-chip').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          openDrawer(JSON.parse(decodeURIComponent(btn.dataset.citation)));
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
   }
 
   function demoSearch(path) {
@@ -34,9 +191,9 @@
       evidence_presentation: event.evidence_presentation,
       timestamp: event.start_time,
       score: 1.0,
-      extra: {}
+      extra: { citations: eventCitations(event) }
     }));
-    const docItems = Object.values(DEMO.documents || {}).map((doc) => ({
+    const docItems = allDocuments().map((doc) => ({
       object_type: 'document',
       id: doc.id,
       title: doc.title,
@@ -45,9 +202,9 @@
       source_type: doc.source_type,
       timestamp: doc.published_at,
       score: 0.9,
-      extra: {}
+      extra: { citations: documentCitations(doc).slice(0, 2) }
     }));
-    const excerptItems = Object.values(DEMO.documents || {}).flatMap((doc) =>
+    const excerptItems = allDocuments().flatMap((doc) =>
       (doc.excerpts || []).map((ex) => ({
         object_type: 'excerpt',
         id: ex.id,
@@ -57,7 +214,7 @@
         source_type: doc.source_type,
         timestamp: doc.published_at,
         score: 0.85,
-        extra: { document_id: doc.id }
+        extra: { document_id: doc.id, citations: [citationForExcerpt(ex.id)].filter(Boolean) }
       }))
     );
 
@@ -112,30 +269,13 @@
     return res.json();
   }
 
-  function qs(name) {
-    return new URLSearchParams(window.location.search).get(name);
-  }
-
-  function evidenceBadge(presentation, fallback) {
-    const label = presentation?.display_label || fallback || 'Unknown';
-    const cls = (presentation?.evidence_class || fallback || '').toLowerCase();
-    return `<span class="badge ${cls}">${label}${presentation?.display_marker || ''}</span>`;
-  }
-
-  function escapeHtml(str) {
-    return (str || '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-  }
-
-  function formatDate(input) {
-    if (!input) return 'Unknown time';
-    return new Date(input).toLocaleString();
-  }
-
-  function resultLink(item) {
-    if (item.object_type === 'event') return `./event.html?id=${encodeURIComponent(item.id)}`;
-    if (item.object_type === 'document') return `./document.html?id=${encodeURIComponent(item.id)}`;
-    if (item.object_type === 'excerpt' && item.extra?.document_id) return `./document.html?id=${encodeURIComponent(item.extra.document_id)}`;
-    return '#';
+  function mountCitations() {
+    bindCitationChips(document);
+    const excerptTarget = window.location.hash.replace('#excerpt=', '');
+    if (excerptTarget) {
+      const target = document.getElementById(excerptTarget);
+      if (target) target.classList.add('excerpt-highlight');
+    }
   }
 
   async function renderHome() {
@@ -160,6 +300,7 @@
       const q = input.value.trim();
       if (q) window.location.href = `./search.html?q=${encodeURIComponent(q)}`;
     });
+    mountCitations();
   }
 
   async function renderSearch() {
@@ -200,12 +341,14 @@
             </div>
             <p class="result-title">${escapeHtml(item.title)}</p>
             <p class="result-snippet">${escapeHtml(item.snippet)}</p>
+            ${citationRow(item.extra?.citations || [])}
             <div class="meta-row">
               ${item.mission_slug ? `<span>Mission: ${escapeHtml(item.mission_slug)}</span>` : ''}
               ${item.timestamp ? `<span>${formatDate(item.timestamp)}</span>` : ''}
             </div>
           </a>`).join('')
         : '<div class="empty">No results matched that combination. Try loosening the filters.</div>';
+      bindCitationChips(resultsHost);
     }
 
     form.addEventListener('submit', async (e) => {
@@ -241,13 +384,17 @@
         <div class="kv-card"><div class="kv-label">Events</div><div class="kv-value">${mission.events_count}</div></div>
       </div>
     `;
-    timelineHost.innerHTML = timeline.map((event) => `
+    timelineHost.innerHTML = timeline.map((event) => {
+      const citations = eventCitations(DEMO.events?.[event.id] || event);
+      return `
       <a class="timeline-item" href="./event.html?id=${encodeURIComponent(event.id)}">
         <div class="meta-row">${evidenceBadge(event.evidence_presentation, event.evidence_class)}<span>${formatDate(event.start_time)}</span></div>
         <p class="timeline-title">${escapeHtml(event.title)}</p>
         <p class="timeline-summary">${escapeHtml(event.summary)}</p>
-      </a>
-    `).join('');
+        ${citationRow(citations)}
+      </a>`;
+    }).join('');
+    bindCitationChips(timelineHost);
   }
 
   async function renderEvent() {
@@ -259,10 +406,12 @@
       return;
     }
     const event = await getJson(`/api/events/${id}`);
+    const citations = eventCitations(event);
     detailHost.innerHTML = `
       <div class="meta-row">${evidenceBadge(event.evidence_presentation, event.evidence_class)}<span>${formatDate(event.start_time)}</span></div>
       <h1>${escapeHtml(event.title)}</h1>
       <p class="doc-text">${escapeHtml(event.summary)}</p>
+      ${citationRow(citations)}
       ${event.evidence_presentation?.disclosure_note ? `
         <div class="disclosure">
           <strong>${escapeHtml(event.evidence_presentation.disclosure_title || 'Disclosure')}</strong>
@@ -270,13 +419,18 @@
           ${event.derivation_note ? `<p class="code-note">${escapeHtml(event.derivation_note)}</p>` : ''}
         </div>` : ''}
     `;
-    evidenceHost.innerHTML = event.evidence_links.length ? event.evidence_links.map((link) => `
-      <div class="evidence-card">
+    evidenceHost.innerHTML = event.evidence_links.length ? event.evidence_links.map((link) => {
+      const citation = citationForExcerpt(link.excerpt.id);
+      return `
+      <div class="evidence-card" id="${escapeHtml(link.excerpt.id)}">
         <div class="meta-row"><span>${escapeHtml(link.relation_type)}</span><span>Support: ${link.support_strength}</span></div>
         <p class="doc-text">${escapeHtml(link.excerpt.excerpt_text)}</p>
+        ${citationRow(citation ? [citation] : [])}
         <div class="meta-row">${link.excerpt.section_label ? `<span>Section: ${escapeHtml(link.excerpt.section_label)}</span>` : ''}${link.excerpt.page_number ? `<span>Page: ${link.excerpt.page_number}</span>` : ''}</div>
-      </div>
-    `).join('') : '<div class="empty">No supporting excerpts are attached yet.</div>';
+      </div>`;
+    }).join('') : '<div class="empty">No supporting excerpts are attached yet.</div>';
+    bindCitationChips(detailHost);
+    bindCitationChips(evidenceHost);
   }
 
   async function renderDocument() {
@@ -288,24 +442,33 @@
       return;
     }
     const doc = await getJson(`/api/documents/${id}`);
+    const citations = documentCitations(doc);
     detailHost.innerHTML = `
       <div class="eyebrow">${escapeHtml(doc.source_type)}</div>
       <h1>${escapeHtml(doc.title)}</h1>
       <div class="meta-row"><span>${escapeHtml(doc.publisher)}</span><span>${doc.published_at ? formatDate(doc.published_at) : 'Publish date unavailable'}</span></div>
       <p><a class="source-link" href="${escapeHtml(doc.source_url)}" target="_blank" rel="noreferrer">Open original official source</a></p>
+      ${citationRow(citations.slice(0, 2))}
       <div class="disclosure"><strong>Document text</strong><p class="doc-text">${escapeHtml(doc.raw_text || 'Raw text unavailable.')}</p></div>
     `;
-    excerptHost.innerHTML = doc.excerpts.length ? doc.excerpts.map((ex) => `
-      <div class="evidence-card">
+    excerptHost.innerHTML = doc.excerpts.length ? doc.excerpts.map((ex) => {
+      const citation = citationForExcerpt(ex.id);
+      return `
+      <div class="evidence-card" id="${escapeHtml(ex.id)}">
         <div class="meta-row"><span>Excerpt ${ex.excerpt_index}</span>${ex.section_label ? `<span>${escapeHtml(ex.section_label)}</span>` : ''}</div>
         <p class="doc-text">${escapeHtml(ex.excerpt_text)}</p>
-      </div>`).join('') : '<div class="empty">No excerpts available.</div>';
+        ${citationRow(citation ? [citation] : [])}
+      </div>`;
+    }).join('') : '<div class="empty">No excerpts available.</div>';
+    bindCitationChips(detailHost);
+    bindCitationChips(excerptHost);
+    mountCitations();
   }
 
   const runners = { home: renderHome, search: renderSearch, mission: renderMission, event: renderEvent, document: renderDocument };
   if (runners[page]) runners[page]().catch((err) => {
     const host = document.querySelector('main');
-    if (host) host.insertAdjacentHTML('afterbegin', `<section class="container"><div class="card"><p class="empty">${escapeHtml(err.message)}</p><p class="empty">If you are running the frontend from GitHub Pages, point <code>web/config.js</code> to your live API.</p></div></section>`);
+    if (host) host.insertAdjacentHTML('afterbegin', `<section class="container"><div class="card"><p class="empty">${escapeHtml(err.message)}</p><p class="empty">If you are running the frontend from GitHub Pages, keep demo mode enabled or point <code>web/config.js</code> to your live API.</p></div></section>`);
     console.error(err);
   });
 })();

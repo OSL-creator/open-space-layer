@@ -94,3 +94,40 @@ button {
   .hero, .split-grid { grid-template-columns: 1fr; }
   .kv-grid { grid-template-columns: 1fr; }
 }
+
+
+.citation-row { display:flex; gap:8px; flex-wrap:wrap; margin: 10px 0 6px; }
+.citation-chip {
+  min-height: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(103,232,249,.28);
+  background: rgba(103,232,249,.08);
+  color: #c7f9ff;
+  font-size: .84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.citation-chip:hover { border-color: rgba(103,232,249,.55); background: rgba(103,232,249,.14); }
+.drawer-backdrop {
+  position: fixed; inset: 0; background: rgba(2,8,15,.72); backdrop-filter: blur(4px);
+  display: grid; place-items: center; padding: 24px; z-index: 50;
+}
+.drawer-backdrop.hidden { display:none; }
+.drawer-panel {
+  width: min(780px, 100%); max-height: min(82vh, 920px); overflow: auto;
+  background: linear-gradient(180deg, rgba(19,35,56,.98), rgba(10,19,31,1));
+  border: 1px solid rgba(255,255,255,.08); border-radius: 24px; padding: 22px;
+  box-shadow: 0 30px 90px rgba(0,0,0,.5);
+}
+.drawer-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom: 16px; }
+.drawer-close {
+  min-height: 40px; min-width: 40px; border-radius: 12px; padding: 0;
+  background: rgba(255,255,255,.06); color: var(--text); border: 1px solid rgba(255,255,255,.08);
+}
+.drawer-body { display:grid; gap: 14px; }
+.drawer-meta { display:flex; gap: 8px; flex-wrap: wrap; }
+.citation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.citation-small { font-size: .95rem; line-height: 1.4; }
+.excerpt-highlight { border-color: rgba(103,232,249,.55); box-shadow: 0 0 0 1px rgba(103,232,249,.22) inset; }
+body.drawer-open { overflow: hidden; }
