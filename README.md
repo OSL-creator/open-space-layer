@@ -94,3 +94,9 @@ The `web/` frontend now supports a built-in demo dataset for GitHub Pages.
 - On GitHub Pages (`github.io`), the site automatically runs in **demo mode** and reads from `web/demo-data.js`.
 - Locally with FastAPI running, the UI continues to use the live API by default.
 - This gives the public site a working, searchable mission experience before backend hosting is added.
+
+
+## v0.7 Cat Mode
+- Floating Cat Mode launcher for morale boosts
+- Live rescue cam source links
+- Animated cat fallback that works on static hosting
