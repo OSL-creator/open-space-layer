@@ -21,6 +21,60 @@
     return (results || []).map((item) => ({ ...item, score: item.score ?? 1.0 }));
   }
 
+  function recentNewsItems() {
+    return DEMO.home?.recent_news || [];
+  }
+
+  function globalSearchIndex() {
+    const eventItems = Object.values(DEMO.events || {}).map((event) => ({
+      object_type: 'event',
+      id: event.id,
+      title: event.title,
+      snippet: event.summary,
+      mission_slug: 'artemis-ii',
+      evidence_class: event.evidence_class,
+      evidence_presentation: event.evidence_presentation,
+      timestamp: event.start_time,
+      score: 1.0,
+      extra: { citations: eventCitations(event) }
+    }));
+    const docItems = allDocuments().map((doc) => ({
+      object_type: 'document',
+      id: doc.id,
+      title: doc.title,
+      snippet: doc.raw_text,
+      mission_slug: 'artemis-ii',
+      source_type: doc.source_type,
+      timestamp: doc.published_at,
+      score: 0.9,
+      extra: { citations: documentCitations(doc).slice(0, 2) }
+    }));
+    const excerptItems = allDocuments().flatMap((doc) =>
+      (doc.excerpts || []).map((ex) => ({
+        object_type: 'excerpt',
+        id: ex.id,
+        title: `Excerpt ${ex.excerpt_index}: ${doc.title}`,
+        snippet: ex.excerpt_text,
+        mission_slug: 'artemis-ii',
+        source_type: doc.source_type,
+        timestamp: doc.published_at,
+        score: 0.85,
+        extra: { document_id: doc.id, citations: [citationForExcerpt(ex.id)].filter(Boolean) }
+      }))
+    );
+    const newsItems = recentNewsItems().map((item) => ({
+      object_type: 'news',
+      id: item.id,
+      title: item.title,
+      snippet: item.summary,
+      source_type: item.source_label,
+      timestamp: item.published_at,
+      score: 0.8,
+      extra: { source_url: item.source_url, topic: item.topic }
+    }));
+    return [...eventItems, ...docItems, ...excerptItems, ...newsItems];
+  }
+
   function suggestionsForQuery(q) {
     const base = (DEMO.home?.suggested_topics || []);
     const lower = (q || '').toLowerCase();
@@ -86,6 +140,7 @@
     if (item.object_type === 'excerpt' && item.extra?.document_id) {
       return `./document.html?id=${encodeURIComponent(item.extra.document_id)}#excerpt=${encodeURIComponent(item.id)}`;
     }
+    if (item.object_type === 'news' && item.extra?.source_url) return item.extra.source_url;
     return '#';
   }
 
@@ -181,51 +236,18 @@
     const confirmedOnly = url.searchParams.get('confirmed_only') === 'true';
     const mission = url.searchParams.get('mission');
 
-    const eventItems = Object.values(DEMO.events || {}).map((event) => ({
-      object_type: 'event',
-      id: event.id,
-      title: event.title,
-      snippet: event.summary,
-      mission_slug: 'artemis-ii',
-      evidence_class: event.evidence_class,
-      evidence_presentation: event.evidence_presentation,
-      timestamp: event.start_time,
-      score: 1.0,
-      extra: { citations: eventCitations(event) }
-    }));
-    const docItems = allDocuments().map((doc) => ({
-      object_type: 'document',
-      id: doc.id,
-      title: doc.title,
-      snippet: doc.raw_text,
-      mission_slug: 'artemis-ii',
-      source_type: doc.source_type,
-      timestamp: doc.published_at,
-      score: 0.9,
-      extra: { citations: documentCitations(doc).slice(0, 2) }
-    }));
-    const excerptItems = allDocuments().flatMap((doc) =>
-      (doc.excerpts || []).map((ex) => ({
-        object_type: 'excerpt',
-        id: ex.id,
-        title: `Excerpt ${ex.excerpt_index}: ${doc.title}`,
-        snippet: ex.excerpt_text,
-        mission_slug: 'artemis-ii',
-        source_type: doc.source_type,
-        timestamp: doc.published_at,
-        score: 0.85,
-        extra: { document_id: doc.id, citations: [citationForExcerpt(ex.id)].filter(Boolean) }
-      }))
-    );
-
-    let results = [...eventItems, ...docItems, ...excerptItems];
+    let results = globalSearchIndex();
     if (mission && mission !== 'artemis-ii') results = [];
     if (q) {
-      results = results.filter((item) => (`${item.title} ${item.snippet}`).toLowerCase().includes(q));
+      results = results.filter((item) => (`${item.title} ${item.snippet} ${item.extra?.topic || ''}`).toLowerCase().includes(q));
     }
     if (objectType) results = results.filter((item) => item.object_type === objectType);
     if (evidenceClass) results = results.filter((item) => item.evidence_class === evidenceClass);
     if (confirmedOnly) results = results.filter((item) => item.evidence_class === 'confirmed');
+
+    if (!q) {
+      results = results.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)).slice(0, 12);
+    }
 
     return {
       query: url.searchParams.get('q') || '',
@@ -282,6 +304,7 @@
     const data = await getJson('/api/home');
     const topicHost = document.getElementById('topic-suggestions');
     const missionHost = document.getElementById('missions-grid');
+    const newsHost = document.getElementById('recent-news');
     const form = document.getElementById('hero-search-form');
     const input = document.getElementById('hero-search-input');
 
@@ -294,6 +317,20 @@
         <div class="result-snippet">${escapeHtml(mission.summary || 'No summary available yet.')}</div>
       </a>
     `).join('');
+
+    if (newsHost) {
+      newsHost.innerHTML = (data.recent_news || []).map((item) => `
+        <article class="news-item">
+          <div class="meta-row"><span>${escapeHtml(item.topic || 'Space')}</span><span>${formatDate(item.published_at)}</span></div>
+          <h3 class="result-title">${escapeHtml(item.title)}</h3>
+          <p class="result-snippet">${escapeHtml(item.summary)}</p>
+          <div class="news-actions">
+            <a class="chip" href="${escapeHtml(item.source_url)}" target="_blank" rel="noreferrer">Open source</a>
+            <a class="chip" href="./search.html?q=${encodeURIComponent(item.title.split(' ')[0])}">Explore related</a>
+          </div>
+        </article>
+      `).join('');
+    }
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -318,10 +355,7 @@
     async function runSearch() {
       const q = input.value.trim();
       if (!q) {
-        resultsHost.innerHTML = '<div class="empty">Enter a query to search official NASA evidence.</div>';
-        suggestionsHost.innerHTML = '';
-        title.textContent = 'Results';
-        return;
+        title.textContent = 'Recent indexed items';
       }
       const params = new URLSearchParams({ q });
       if (typeFilter.value) params.set('object_type', typeFilter.value);
@@ -329,15 +363,16 @@
       if (confirmedFilter.checked) params.set('confirmed_only', 'true');
 
       const data = await getJson(`/api/search?${params.toString()}`);
-      title.textContent = `${data.total} result${data.total === 1 ? '' : 's'} for “${q}”`;
+      title.textContent = q ? `${data.total} result${data.total === 1 ? '' : 's'} for “${q}”` : `Recent indexed items`;
       suggestionsHost.innerHTML = data.suggestions.map((topic) => `<a class="chip" href="./search.html?q=${encodeURIComponent(topic)}">${escapeHtml(topic)}</a>`).join('');
       resultsHost.innerHTML = data.results.length
         ? data.results.map((item) => `
-          <a class="result-card" href="${resultLink(item)}">
+          <a class="result-card" href="${resultLink(item)}" ${item.object_type === 'news' ? `target="_blank" rel="noreferrer"` : ``}>
             <div class="meta-row">
               <span>${escapeHtml(item.object_type)}</span>
               ${item.evidence_presentation ? evidenceBadge(item.evidence_presentation, item.evidence_class) : ''}
               ${item.source_type ? `<span>${escapeHtml(item.source_type)}</span>` : ''}
+              ${item.extra?.topic ? `<span>${escapeHtml(item.extra.topic)}</span>` : ''}
             </div>
             <p class="result-title">${escapeHtml(item.title)}</p>
             <p class="result-snippet">${escapeHtml(item.snippet)}</p>

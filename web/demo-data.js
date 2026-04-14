@@ -1,13 +1,14 @@
 window.OSL_DEMO_DATA = {
   home: {
     hero_title: "Open Space Layer",
-    hero_subtitle: "Search official NASA mission evidence or enter through mission control.",
+    hero_subtitle: "Search official mission evidence, explore recent spaceflight headlines, and inspect source-linked claims without leaving the public web.",
     suggested_topics: [
       "Earthrise",
       "communications blackout",
       "closest approach",
-      "Earthset",
-      "official sources only"
+      "Artemis II",
+      "Starlink launches",
+      "ESA Orion"
     ],
     missions: [
       {
@@ -15,9 +16,47 @@ window.OSL_DEMO_DATA = {
         name: "Artemis II",
         status: "completed",
         mission_type: "crewed lunar flyby",
-        summary: "Demo-mode Artemis II dataset derived from official-source-style mission updates and excerpt-level evidence wiring."
+        summary: "Demo-mode Artemis II dataset derived from source-linked mission updates and excerpt-level evidence wiring."
       }
-    ]
+    ],
+    recent_news: [
+  {
+    "id": "news-artemis-splashdown",
+    "title": "Artemis II splashes down after historic crewed lunar mission",
+    "summary": "NASA\u2019s Artemis II crew returned safely on April 10 after a lunar flyby mission that set a new human-distance record for deep-space flight.",
+    "published_at": "2026-04-10T23:00:00Z",
+    "topic": "NASA / Artemis",
+    "source_label": "Reuters",
+    "source_url": "https://www.reuters.com/science/artemis-ii-astronauts-hurtle-home-moon-toward-splashdown-2026-04-10/"
+  },
+  {
+    "id": "news-artemis-flyby",
+    "title": "Artemis II lunar flyby records Earthset, Earthrise, and record distance",
+    "summary": "During the April 6 lunar flyby, Orion passed about 4,067 miles above the Moon and reached 252,756 miles from Earth.",
+    "published_at": "2026-04-07T02:00:00Z",
+    "topic": "NASA / Artemis",
+    "source_label": "Space.com",
+    "source_url": "https://www.space.com/space-exploration/artemis/artemis-2-astronauts-head-toward-earth-record-breaking-moon-flyby"
+  },
+  {
+    "id": "news-spacex-launches",
+    "title": "SpaceX launch manifest lists back-to-back Falcon 9 Starlink missions",
+    "summary": "SpaceX\u2019s official launches page lists a Starlink mission from Florida on April 13 and another from California on April 14.",
+    "published_at": "2026-04-13T12:00:00Z",
+    "topic": "Launches / SpaceX",
+    "source_label": "SpaceX",
+    "source_url": "https://www.spacex.com/launches"
+  },
+  {
+    "id": "news-esa-orion",
+    "title": "ESA highlights behind-the-scenes support for Artemis lunar operations",
+    "summary": "ESA published a behind-the-scenes Orion programme update describing European coordination during Artemis II mission support.",
+    "published_at": "2026-04-10T12:00:00Z",
+    "topic": "ESA / Orion",
+    "source_label": "ESA",
+    "source_url": "https://blogs.esa.int/orion/2026/04/10/behind-the-scenes-of-a-lunar-programme/"
+  }
+]
   },
   missions: [
     {
@@ -96,131 +135,13 @@ window.OSL_DEMO_DATA = {
   },
   events: {
     "event-blackout": {
-      id: "event-blackout",
-      event_type: "communications_blackout_begin",
-      title: "Communications Blackout",
-      start_time: "2026-04-06T19:00:00Z",
-      summary: "During the lunar flyby, Orion passed behind the Moon, creating a planned communications blackout as line-of-sight to Earth was interrupted.",
-      evidence_class: "confirmed",
-      confidence: 0.98,
-      derivation_note: null,
-      evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" },
-      evidence_links: [
-        {
-          relation_type: "supports",
-          support_strength: 0.98,
-          excerpt: {
-            id: "excerpt-blackout",
-            excerpt_index: 1,
-            excerpt_text: "During the lunar flyby, Orion passed behind the Moon, creating a planned communications blackout as line-of-sight to Earth was interrupted.",
-            section_label: "Mission update",
-            page_number: null
-          }
-        }
-      ]
+      id: "event-blackout", event_type: "communications_blackout_begin", title: "Communications Blackout", start_time: "2026-04-06T19:00:00Z", summary: "During the lunar flyby, Orion passed behind the Moon, creating a planned communications blackout as line-of-sight to Earth was interrupted.", evidence_class: "confirmed", confidence: 0.98, derivation_note: null, evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" },
+      evidence_links: [{ relation_type: "supports", support_strength: 0.98, excerpt: { id: "excerpt-blackout", excerpt_index: 1, excerpt_text: "During the lunar flyby, Orion passed behind the Moon, creating a planned communications blackout as line-of-sight to Earth was interrupted.", section_label: "Mission update", page_number: null } }]
     },
-    "event-earthset": {
-      id: "event-earthset",
-      event_type: "earthset_observed",
-      title: "Earthset Observed",
-      start_time: "2026-04-06T19:08:00Z",
-      summary: "The crew observed Earthset as Orion moved behind the Moon.",
-      evidence_class: "confirmed",
-      confidence: 0.97,
-      derivation_note: null,
-      evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" },
-      evidence_links: [
-        {
-          relation_type: "supports",
-          support_strength: 0.97,
-          excerpt: {
-            id: "excerpt-earthset",
-            excerpt_index: 2,
-            excerpt_text: "The crew observed Earthset as Orion moved behind the Moon.",
-            section_label: "Mission update",
-            page_number: null
-          }
-        }
-      ]
-    },
-    "event-closest-approach": {
-      id: "event-closest-approach",
-      event_type: "closest_approach",
-      title: "Closest Approach",
-      start_time: "2026-04-06T19:12:00Z",
-      summary: "At closest approach, Orion passed about 4,067 miles above the lunar surface.",
-      evidence_class: "confirmed",
-      confidence: 0.99,
-      derivation_note: null,
-      evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" },
-      evidence_links: [
-        {
-          relation_type: "supports",
-          support_strength: 0.99,
-          excerpt: {
-            id: "excerpt-closest-approach",
-            excerpt_index: 3,
-            excerpt_text: "At closest approach, Orion passed about 4,067 miles above the lunar surface.",
-            section_label: "Mission update",
-            page_number: null
-          }
-        }
-      ]
-    },
-    "event-earthrise": {
-      id: "event-earthrise",
-      event_type: "earthrise_observed",
-      title: "Earthrise Observed",
-      start_time: "2026-04-06T19:44:00Z",
-      summary: "After the blackout window, the crew observed Earthrise as communications were re-established.",
-      evidence_class: "confirmed",
-      confidence: 0.97,
-      derivation_note: null,
-      evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" },
-      evidence_links: [
-        {
-          relation_type: "supports",
-          support_strength: 0.97,
-          excerpt: {
-            id: "excerpt-earthrise",
-            excerpt_index: 4,
-            excerpt_text: "After the blackout window, the crew observed Earthrise as communications were re-established.",
-            section_label: "Mission update",
-            page_number: null
-          }
-        }
-      ]
-    },
-    "event-observation-complete": {
-      id: "event-observation-complete",
-      event_type: "observation_window_complete",
-      title: "Observation Window Complete",
-      start_time: "2026-04-06T20:10:00Z",
-      summary: "The observation window concluded and the return phase continued toward Earth.",
-      evidence_class: "interpreted",
-      confidence: 0.83,
-      derivation_note: "Interpretive summary based on official-source sequence. The source supports the phase completion, but this event title is normalized by the system.",
-      evidence_presentation: {
-        evidence_class: "interpreted",
-        display_label: "Interpreted",
-        display_marker: "**",
-        disclosure_title: "Interpretive summary based on official sources",
-        disclosure_note: "This view preserves the underlying official facts while normalizing the title and phrasing for search and replay." 
-      },
-      evidence_links: [
-        {
-          relation_type: "supports",
-          support_strength: 0.83,
-          excerpt: {
-            id: "excerpt-observation-complete",
-            excerpt_index: 5,
-            excerpt_text: "The observation window concluded and the return phase continued toward Earth.",
-            section_label: "Mission update",
-            page_number: null
-          }
-        }
-      ]
-    }
+    "event-earthset": { id: "event-earthset", event_type: "earthset_observed", title: "Earthset Observed", start_time: "2026-04-06T19:08:00Z", summary: "The crew observed Earthset as Orion moved behind the Moon.", evidence_class: "confirmed", confidence: 0.97, derivation_note: null, evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" }, evidence_links: [{ relation_type: "supports", support_strength: 0.97, excerpt: { id: "excerpt-earthset", excerpt_index: 2, excerpt_text: "The crew observed Earthset as Orion moved behind the Moon.", section_label: "Mission update", page_number: null } }] },
+    "event-closest-approach": { id: "event-closest-approach", event_type: "closest_approach", title: "Closest Approach", start_time: "2026-04-06T19:12:00Z", summary: "At closest approach, Orion passed about 4,067 miles above the lunar surface.", evidence_class: "confirmed", confidence: 0.99, derivation_note: null, evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" }, evidence_links: [{ relation_type: "supports", support_strength: 0.99, excerpt: { id: "excerpt-closest-approach", excerpt_index: 3, excerpt_text: "At closest approach, Orion passed about 4,067 miles above the lunar surface.", section_label: "Mission update", page_number: null } }] },
+    "event-earthrise": { id: "event-earthrise", event_type: "earthrise_observed", title: "Earthrise Observed", start_time: "2026-04-06T19:44:00Z", summary: "After the blackout window, the crew observed Earthrise as communications were re-established.", evidence_class: "confirmed", confidence: 0.97, derivation_note: null, evidence_presentation: { evidence_class: "confirmed", display_label: "Confirmed", display_marker: "" }, evidence_links: [{ relation_type: "supports", support_strength: 0.97, excerpt: { id: "excerpt-earthrise", excerpt_index: 4, excerpt_text: "After the blackout window, the crew observed Earthrise as communications were re-established.", section_label: "Mission update", page_number: null } }] },
+    "event-observation-complete": { id: "event-observation-complete", event_type: "observation_window_complete", title: "Observation Window Complete", start_time: "2026-04-06T20:10:00Z", summary: "The observation window concluded and the return phase continued toward Earth.", evidence_class: "interpreted", confidence: 0.83, derivation_note: "Interpretive summary based on official-source sequence. The source supports the phase completion, but this event title is normalized by the system.", evidence_presentation: { evidence_class: "interpreted", display_label: "Interpreted", display_marker: "**", disclosure_title: "Interpretive summary based on official sources", disclosure_note: "This view preserves the underlying official facts while normalizing the title and phrasing for search and replay." }, evidence_links: [{ relation_type: "supports", support_strength: 0.83, excerpt: { id: "excerpt-observation-complete", excerpt_index: 5, excerpt_text: "The observation window concluded and the return phase continued toward Earth.", section_label: "Mission update", page_number: null } }] }
   },
   documents: {
     "doc-artemis-seed": {

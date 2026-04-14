@@ -131,3 +131,15 @@ button {
 .citation-small { font-size: .95rem; line-height: 1.4; }
 .excerpt-highlight { border-color: rgba(103,232,249,.55); box-shadow: 0 0 0 1px rgba(103,232,249,.22) inset; }
 body.drawer-open { overflow: hidden; }
+
+.cat-banner{display:flex;gap:14px;justify-content:flex-end;align-items:center;padding-top:18px;color:#ffd7f4;font-size:1.4rem;opacity:.92}
+.news-card{margin-bottom:40px}
+.news-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.news-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;position:relative;overflow:hidden}
+.news-item::after{content:'🐾';position:absolute;right:14px;bottom:10px;opacity:.14;font-size:2.1rem}
+.news-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.hero h1 .spark{color:#ffd7f4;text-shadow:0 0 18px rgba(255,215,244,.28)}
+.mission-card::before,.result-card::before,.timeline-item::before{content:'';position:absolute}
+.mission-card,.result-card,.timeline-item{position:relative;overflow:hidden}
+.mission-card::after,.result-card::after,.timeline-item::after{content:'✦';position:absolute;right:16px;top:14px;color:rgba(255,215,244,.18);font-size:1.2rem}
+@media (max-width: 900px){.news-list{grid-template-columns:1fr}.cat-banner{justify-content:flex-start}}
